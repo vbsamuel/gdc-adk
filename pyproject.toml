@@ -1,0 +1,9 @@
+[project]
+name = "gdc-adk"
+version = "0.1.0"
+description = "Google ADK-like agent framework"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.scripts]
+adk = "gdc_adk.entrypoint:main"
