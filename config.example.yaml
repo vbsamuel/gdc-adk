@@ -1,0 +1,27 @@
+app:
+  name: gdc-adk
+  environment: ${ENV}
+  log_level: ${LOG_LEVEL}
+
+ai_providers:
+  openai:
+    api_key: ${OPENAI_API_KEY}
+    model: "gpt-4"
+
+  google:
+    api_key: ${GEMINI_API_KEY}
+    model: "gemini-2.5-flash"
+
+  anthropic:
+    api_key: ${ANTHROPIC_API_KEY}
+    model: "claude-3"
+
+  azure:
+    api_key: ${AZURE_OPENAI_KEY}
+    endpoint: ${AZURE_OPENAI_ENDPOINT}
+    model: "gpt-4"
+
+agents:
+  - name: echo
+    type: echo
+    config: {}
