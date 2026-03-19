@@ -1,27 +1,40 @@
 app:
   name: gdc-adk
-  environment: ${ENV}
-  log_level: ${LOG_LEVEL}
+  environment: development
+  log_level: INFO
 
 ai_providers:
-  openai:
-    api_key: ${OPENAI_API_KEY}
-    model: "gpt-4"
-
   google:
-    api_key: ${GEMINI_API_KEY}
     model: "gemini-2.5-flash"
 
-  anthropic:
-    api_key: ${ANTHROPIC_API_KEY}
-    model: "claude-3"
+  ollama:
+    enabled: false
+    base_url: "http://localhost:11434"
+    model: "llama3.1:8b"
 
-  azure:
-    api_key: ${AZURE_OPENAI_KEY}
-    endpoint: ${AZURE_OPENAI_ENDPOINT}
-    model: "gpt-4"
+  llamacpp:
+    enabled: false
+    endpoint: ""
+    model: "qwen2.5-coder:7b"
+
+routing:
+  default_provider: "google"
+  failover_order:
+    - google
+    - ollama
+    - llamacpp
+
+runtime:
+  local_execution:
+    max_concurrent_models: 1
+    unload_after_request: true
+    ollama_keep_alive: 0
+    prefer_warm_model: true
+    allow_backend_switch: true
 
 agents:
   - name: echo
     type: echo
-    config: {}
+    config:
+      provider: google
+      prompt_prefix: "Echo or summarize this input:"

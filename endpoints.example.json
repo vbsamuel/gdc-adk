@@ -1,0 +1,18 @@
+{
+  "openai": {
+    "url": "${OPENAI_ENDPOINT}",
+    "models": ["gpt-4", "gpt-3.5-turbo"]
+  },
+  "google": {
+    "url": "${GOOGLE_ENDPOINT}",
+    "models": ["gemini-2.5-flash"]
+  },
+  "anthropic": {
+    "url": "${ANTHROPIC_ENDPOINT}",
+    "models": ["claude-3"]
+  },
+  "azure": {
+    "url": "${AZURE_OPENAI_ENDPOINT}",
+    "models": ["gpt-4"]
+  }
+}

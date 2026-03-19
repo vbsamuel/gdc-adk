@@ -1,7 +1,9 @@
-from pydantic_settings import BaseSettings
-import os
+from pathlib import Path
+from typing import Any, Optional
+
 import yaml
-from typing import Optional
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
 
 class Settings(BaseSettings):
     ENV: str = "development"
@@ -9,31 +11,83 @@ class Settings(BaseSettings):
     HOST: str = "127.0.0.1"
     PORT: int = 8000
     API_PREFIX: str = "/api"
+
     GEMINI_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+    ANTHROPIC_API_KEY: Optional[str] = None
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        extra="ignore",
+    )
 
-def load_gemini_model(config_paths=("config.yaml", "config.example.yaml")) -> str:
-    for path in config_paths:
-        if os.path.exists(path):
-            with open(path, "r", encoding="utf-8") as f:
-                config = yaml.safe_load(f)
-            google_cfg = config.get("ai_providers", {}).get("google", {})
-            model = google_cfg.get("model", "")
-            # Do not treat ${GEMINI_API_KEY} as a real key
-            if model:
-                return model
-    return ""
 
-def get_gemini_config_or_fail() -> dict:
+def load_yaml_config(config_paths=("config.yaml", "config.example.yaml")) -> dict[str, Any]:
+    for path_str in config_paths:
+        path = Path(path_str)
+        if path.exists():
+            with path.open("r", encoding="utf-8") as f:
+                return yaml.safe_load(f) or {}
+    return {}
+
+
+def get_local_execution_config() -> dict[str, Any]:
+    config = load_yaml_config()
+    runtime_cfg = config.get("runtime", {})
+    local_cfg = runtime_cfg.get("local_execution", {})
+
+    requested_max_concurrent_models = local_cfg.get("max_concurrent_models", 1)
+    try:
+        int(requested_max_concurrent_models)
+    except (TypeError, ValueError):
+        requested_max_concurrent_models = 1
+
+    return {
+        "max_concurrent_models": 1,
+        "unload_after_request": bool(local_cfg.get("unload_after_request", True)),
+        "ollama_keep_alive": local_cfg.get("ollama_keep_alive", 0),
+        "prefer_warm_model": bool(local_cfg.get("prefer_warm_model", True)),
+        "allow_backend_switch": bool(local_cfg.get("allow_backend_switch", True)),
+    }
+
+
+def get_provider_config_or_fail(provider: str) -> dict[str, Any]:
     settings = Settings()
-    model = load_gemini_model()
-    if not model or " " in model or "gemini-progemini" in model:
-        raise ValueError(f"Invalid Gemini model value: {model!r}")
-    api_key = settings.GEMINI_API_KEY
-    if not api_key or not isinstance(api_key, str) or api_key.strip() == "" or api_key.strip().startswith("${"):
-        raise ValueError("GEMINI_API_KEY must be set in the environment and not as a template value.")
-    if not model:
-        raise ValueError("Gemini model must be set in config.yaml or config.example.yaml under ai_providers.google.model.")
-    return {"api_key": api_key, "model": model}
+    config = load_yaml_config()
+
+    providers = config.get("ai_providers", {})
+    provider_cfg = providers.get(provider, {})
+
+    model = provider_cfg.get("model", "")
+    if not model or " " in model or "${" in model:
+        raise ValueError(f"Invalid model value for provider '{provider}': {model!r}")
+
+    if provider == "google":
+        api_key = settings.GEMINI_API_KEY
+        if not api_key or api_key.strip() == "" or api_key.strip().startswith("${"):
+            raise ValueError("GEMINI_API_KEY must be set in the environment.")
+        return {"api_key": api_key, "model": model}
+
+    if provider == "openai":
+        api_key = settings.OPENAI_API_KEY
+        if not api_key or api_key.strip() == "" or api_key.strip().startswith("${"):
+            raise ValueError("OPENAI_API_KEY must be set in the environment.")
+        return {"api_key": api_key, "model": model}
+
+    if provider == "anthropic":
+        api_key = settings.ANTHROPIC_API_KEY
+        if not api_key or api_key.strip() == "" or api_key.strip().startswith("${"):
+            raise ValueError("ANTHROPIC_API_KEY must be set in the environment.")
+        return {"api_key": api_key, "model": model}
+
+    if provider == "ollama":
+        enabled = bool(provider_cfg.get("enabled", True))
+        base_url = str(provider_cfg.get("base_url") or settings.OLLAMA_BASE_URL).rstrip("/")
+        return {
+            "enabled": enabled,
+            "base_url": base_url,
+            "model": model,
+        }
+
+    raise ValueError(f"Unsupported provider: {provider}")

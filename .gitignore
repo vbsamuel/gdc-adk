@@ -13,9 +13,7 @@ ENV/
 .env
 .env.*
 config.yaml
-config.example.yaml
 endpoints.json
-endpoints.example.json
 
 # Jupyter/IPython
 .ipynb_checkpoints/
