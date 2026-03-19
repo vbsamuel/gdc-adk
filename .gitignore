@@ -9,20 +9,27 @@ venv/
 env/
 ENV/
 
-# Environment variables
+# Environment variables / runtime config
 .env
 .env.*
 config.yaml
 endpoints.json
 
-# Jupyter/IPython
-.ipynb_checkpoints/
+# Secrets (extra safety)
+*.key
+*.pem
+*.crt
+secrets.*
 
-# Data, models, outputs
+# Data / artifacts
 /data/
-/datasets/
-/models/
-/outputs/
+datasets/
+models/
+outputs/
+*.parquet
+*.feather
+*.pkl
+*.joblib
 *.h5
 *.ckpt
 *.pth
@@ -31,18 +38,24 @@ endpoints.json
 *.tflite
 *.npz
 *.npy
-*.csv
-*.tsv
-*.parquet
-*.feather
-*.pkl
-*.joblib
 *.db
 *.sqlite*
+
+# Runtime / observability
+logs/
+traces/
+metrics/
 *.log
+*.trace
+*.otel
+
+# Cache / temp
 *.tmp
 *.cache
 .cache/
+
+# Notes (scoped only)
+.notes/
 
 # FastAPI/Starlette
 instance/
@@ -52,35 +65,29 @@ build/
 dist/
 *.egg-info/
 .eggs/
+*.egg
+pip-wheel-metadata/
 
-# PyInstaller
-*.spec
-
-# Coverage
+# Coverage / testing
 .coverage
 htmlcov/
 .tox/
 .nox/
-
-# Testing
 .pytest_cache/
-.cache/
 
 # Editors/IDEs
 .vscode/
 .idea/
-*.sublime-workspace
-*.sublime-project
 
 # OS
 Thumbs.db
 .DS_Store
 Desktop.ini
 
-# Node/npm (if using JS tools)
+# Node/npm
 node_modules/
 
-# Docker
+# Docker / runtime
 *.pid
 *.pid.lock
 *.sock
@@ -91,9 +98,6 @@ node_modules/
 *.orig
 *.old
 
-# LLM/AI agentic
-*.toon
-*.jsonl
+# LLM cache
 *.llmcache/
 llm_cache/
-config.yaml
