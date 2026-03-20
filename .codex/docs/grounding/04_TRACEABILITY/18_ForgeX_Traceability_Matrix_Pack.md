@@ -35,7 +35,7 @@ Every row in the traceability matrix must include:
 - `review_findings_if_failed`
 - `completion_status`
 
-A requirement is incomplete if any column is “unknown” without an explicit rationale.
+A requirement is incomplete if any column is Ã¢â‚¬Å“unknownÃ¢â‚¬Â without an explicit rationale.
 
 ---
 
@@ -69,7 +69,7 @@ For every requested implementation change:
 3. update completion status only after acceptance tests pass
 4. create review findings if an implementation partially satisfies a row but leaves gaps
 
-Do not treat “compiles successfully” or “demo worked once” as enough to mark a row complete.
+Do not treat Ã¢â‚¬Å“compiles successfullyÃ¢â‚¬Â or Ã¢â‚¬Å“demo worked onceÃ¢â‚¬Â as enough to mark a row complete.
 
 ---
 
@@ -86,3 +86,77 @@ Do not use vague statuses like:
 - `done-ish`
 - `mostly complete`
 - `almost`
+
+## Completion Evidence Updates
+
+### FX-R007
+- status: accepted
+- files: `src/gdc_adk/core/state.py`, `src/gdc_adk/substrate/artifact_store.py`, `src/gdc_adk/substrate/dispatch_system.py`, `tests/test_stage1.py`
+- evidence: `tests/test_stage1.py` proves request artifact creation, workflow linkage, export/reset/load replay behavior, invalid and duplicate load rejection, and fix-flow linkage behavior.
+- notes: explicit lifecycle APIs and artifact/workflow linkage verified.
+
+### FX-R008
+- status: accepted
+- files: `src/gdc_adk/substrate/artifact_store.py`, `src/gdc_adk/substrate/dispatch_system.py`, `src/gdc_adk/substrate/issue_tracker.py`, `tests/test_stage1.py`, `src/gdc_adk/information_plane/activation/trigger_router.py`, `src/gdc_adk/information_plane/activation/workflow_activation.py`, `tests/test_stage3.py`
+- evidence: Stage 1 proves typed issue creation with bidirectional artifact/issue linkage and lookup by issue id. Stage 3 proves deterministic fix-like activation metadata, issue-candidate classification, fix-flow selection, and downstream trigger readiness.
+- notes: accepted by combined Stage 1 + Stage 3 evidence.
+
+### FX-R009
+- status: accepted
+- files: `src/gdc_adk/substrate/dispatch_system.py`, `tests/test_stage1.py`
+- evidence: `tests/test_stage1.py` proves structured workflow creation, event emission order, unsupported workflow-hint rejection, and workflow-run lifecycle behavior.
+- notes: typed public dispatch entry and Stage 1 workflow-mode enforcement verified.
+
+### FX-R001
+- status: accepted
+- files: `src/gdc_adk/config/settings.py`, `tests/test_stage2.py`
+- evidence: `tests/test_stage2.py` proves typed settings loading and Stage 2 config surfaces.
+- notes: hidden singleton cache behavior removed.
+
+### FX-R002
+- status: accepted
+- files: `src/gdc_adk/control_plane/router.py`, `src/gdc_adk/runtime/local_model_manager.py`, `src/gdc_adk/providers/router.py`, `tests/test_stage2.py`
+- evidence: `tests/test_stage2.py` proves deterministic-before-LLM routing, configured failover-order behavior, all-provider-fail path, no-provider-available rejection, and Stage 1 -> Stage 2 subsystem-boundary proof.
+- notes: accepted.
+
+### FX-R003
+- status: accepted
+- files: `src/gdc_adk/providers/base.py`, `src/gdc_adk/providers/ollama_provider.py`, `src/gdc_adk/providers/google_provider.py`, `src/gdc_adk/providers/weather/base.py`, `src/gdc_adk/providers/weather/open_meteo.py`, `tests/test_stage2.py`
+- evidence: `tests/test_stage2.py` proves provider contract validation, weather provider failure and empty-payload handling, and clean capability -> provider abstraction for weather flow.
+- notes: accepted.
+
+### FX-R004
+- status: accepted
+- files: `src/gdc_adk/capabilities/geo.py`, `src/gdc_adk/capabilities/time.py`, `src/gdc_adk/capabilities/weather.py`, `tests/test_stage2.py`
+- evidence: `tests/test_stage2.py` proves deterministic capability selection before reasoning paths, typed public capability contracts, and negative-path rejection behavior.
+- notes: accepted.
+
+### FX-R005
+- status: accepted
+- files: `src/gdc_adk/capabilities/weather.py`, `src/gdc_adk/providers/weather/base.py`, `src/gdc_adk/providers/weather/open_meteo.py`, `src/gdc_adk/control_plane/router.py`, `tests/test_stage2.py`
+- evidence: `tests/test_stage2.py` proves capability-owned city normalization, provider transport/translation only, configured routing/failover behavior, weather failure handling, and empty-payload rejection.
+- notes: accepted.
+
+### FX-R006
+- status: accepted
+- files: `src/gdc_adk/information_plane/ingestion/document_ingestor.py`, `src/gdc_adk/information_plane/normalization/canonicalizer.py`, `src/gdc_adk/information_plane/indexing/artifact_index.py`, `src/gdc_adk/information_plane/activation/workflow_activation.py`, `tests/test_stage3.py`
+- evidence: `tests/test_stage3.py` proves ingestion -> canonicalization -> indexing -> activation ordering, Stage 2 -> Stage 3 boundary intake, Stage 3 -> Stage 2 forward-boundary proof, and replay/load negative paths.
+- notes: accepted.
+
+### FX-R010
+- status: accepted
+- files: `src/gdc_adk/memory/contracts.py`, `src/gdc_adk/memory/cache.py`, `src/gdc_adk/memory/context_store.py`, `src/gdc_adk/memory/continuity.py`, `src/gdc_adk/memory/replay.py`, `tests/test_stage5.py`
+- evidence: `tests/test_stage5.py` proves typed cache/context records, continuity snapshot create/export/resume/rehydrate behavior, replay export/validate/rehydrate behavior, invalid input rejection, Stage 4 -> Stage 5 boundary proof, Stage 5 -> Stage 6 forward-boundary contract proof, and replay negative paths.
+- notes: accepted.
+
+### FX-R011
+- status: accepted
+- files: `src/gdc_adk/validation/validator.py`, `src/gdc_adk/validation/drift_checker.py`, `src/gdc_adk/validation/traceability_auditor.py`, `src/gdc_adk/validation/grounding_checker.py`, `tests/test_stage4.py`
+- evidence: `tests/test_stage4.py` proves finding lifecycle behavior, structured validation outputs, drift/traceability/grounding checks, Stage 3 -> Stage 4 boundary proof, and Stage 4 -> Stage 5 forward-boundary contract readiness proof.
+- notes: accepted.
+
+### FX-R012
+- status: accepted
+- files: `src/gdc_adk/workflows/engine.py`, `src/gdc_adk/workflows/state_machine.py`, `src/gdc_adk/workflows/fix_flow.py`, `src/gdc_adk/workflows/iterative_flow.py`, `tests/test_stage4.py`
+- evidence: `tests/test_stage4.py` proves explicit state transitions, fix-flow verification and reopen behavior, iterative lineage preservation, Stage 3 -> Stage 4 boundary proof, and Stage 4 -> Stage 5 forward-boundary contract readiness proof.
+- notes: accepted.
