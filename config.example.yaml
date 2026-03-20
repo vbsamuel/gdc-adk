@@ -1,5 +1,5 @@
-app:
-  name: gdc-adk
+﻿app:
+  name: gdc-labs
   environment: development
   log_level: INFO
 
@@ -8,21 +8,20 @@ ai_providers:
     model: "gemini-2.5-flash"
 
   ollama:
-    enabled: false
+    enabled: true
+    model: "gemma3:12b-it-qat"
     base_url: "http://localhost:11434"
-    model: "llama3.1:8b"
 
   llamacpp:
     enabled: false
-    endpoint: ""
-    model: "qwen2.5-coder:7b"
+    model: "qwen3.5:9b"
+    base_url: "http://localhost:8000"
 
 routing:
-  default_provider: "google"
+  default_provider: "ollama"
   failover_order:
-    - google
     - ollama
-    - llamacpp
+    - google
 
 runtime:
   local_execution:
@@ -32,9 +31,7 @@ runtime:
     prefer_warm_model: true
     allow_backend_switch: true
 
-agents:
-  - name: echo
-    type: echo
-    config:
-      provider: google
-      prompt_prefix: "Echo or summarize this input:"
+weather:
+  provider: "open_meteo"
+  open_meteo:
+    base_url: "https://api.open-meteo.com/v1/forecast"

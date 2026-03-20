@@ -1,32 +1,38 @@
-from .base import LLMRequest, LLMResponse
+from __future__ import annotations
+
+from collections.abc import Callable
+
+from .base import LLMProvider, LLMRequest, LLMResponse, ProviderTransportError
 from .google_provider import GoogleProvider
 from .ollama_provider import OllamaProvider
-from gdc_adk.runtime.local_model_manager import local_model_manager
 
-def get_llm_client(provider: str):
-    provider = provider.lower()
 
-    if provider == "google":
-        return GoogleProvider()
-    if provider == "ollama":
+def create_llm_provider(provider_name: str) -> LLMProvider:
+    normalized_provider_name = provider_name.strip().lower()
+    if normalized_provider_name == "ollama":
         return OllamaProvider()
+    if normalized_provider_name == "google":
+        return GoogleProvider()
+    raise ValueError(f"Unsupported provider: {provider_name}")
 
-    raise ValueError(f"Unsupported provider: {provider}")
 
+def generate_with_provider_failover(
+    request: LLMRequest,
+    provider_chain: list[str],
+    provider_factory: Callable[[str], LLMProvider] = create_llm_provider,
+) -> LLMResponse:
+    if not provider_chain:
+        raise ValueError("provider_chain must not be empty")
 
-def generate_with_failover(req: LLMRequest, order: list[str]) -> LLMResponse:
-    errors: list[str] = []
-
-    for provider_name in order:
+    provider_errors: list[str] = []
+    for provider_name in provider_chain:
+        provider = provider_factory(provider_name)
+        if not provider.is_available():
+            provider_errors.append(f"{provider_name}: unavailable")
+            continue
         try:
-            provider = get_llm_client(provider_name)
-            if not provider.is_available():
-                errors.append(f"{provider_name}: unavailable")
-                continue
-            if local_model_manager.is_local_provider(provider):
-                return local_model_manager.run(provider, lambda: provider.generate(req))
-            return provider.generate(req)
-        except Exception as e:
-            errors.append(f"{provider_name}: {e}")
+            return provider.generate_response(request)
+        except ProviderTransportError as exc:
+            provider_errors.append(f"{provider_name}: {exc}")
 
-    raise RuntimeError("All providers failed: " + " | ".join(errors))
+    raise ProviderTransportError("All providers failed: " + " | ".join(provider_errors))

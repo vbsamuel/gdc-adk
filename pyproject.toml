@@ -1,10 +1,9 @@
 [project]
 name = "gdc-adk"
 version = "0.1.0"
-description = "Google ADK-like agent framework"
+description = "Local-first modular agent control plane and adapters"
 readme = "README.md"
 requires-python = ">=3.10"
 
 [project.scripts]
-adk = "gdc_adk.entrypoint:main"
-
+gdc-adk = "gdc_adk.entrypoint:main"
