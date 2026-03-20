@@ -35,7 +35,7 @@ Every row in the traceability matrix must include:
 - `review_findings_if_failed`
 - `completion_status`
 
-A requirement is incomplete if any column is Ã¢â‚¬Å“unknownÃ¢â‚¬Â without an explicit rationale.
+A requirement is incomplete if any column is ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œunknownÃƒÂ¢Ã¢â€šÂ¬Ã‚Â without an explicit rationale.
 
 ---
 
@@ -69,7 +69,7 @@ For every requested implementation change:
 3. update completion status only after acceptance tests pass
 4. create review findings if an implementation partially satisfies a row but leaves gaps
 
-Do not treat Ã¢â‚¬Å“compiles successfullyÃ¢â‚¬Â or Ã¢â‚¬Å“demo worked onceÃ¢â‚¬Â as enough to mark a row complete.
+Do not treat ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œcompiles successfullyÃƒÂ¢Ã¢â€šÂ¬Ã‚Â or ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œdemo worked onceÃƒÂ¢Ã¢â€šÂ¬Ã‚Â as enough to mark a row complete.
 
 ---
 
@@ -160,3 +160,13 @@ Do not use vague statuses like:
 - files: `src/gdc_adk/workflows/engine.py`, `src/gdc_adk/workflows/state_machine.py`, `src/gdc_adk/workflows/fix_flow.py`, `src/gdc_adk/workflows/iterative_flow.py`, `tests/test_stage4.py`
 - evidence: `tests/test_stage4.py` proves explicit state transitions, fix-flow verification and reopen behavior, iterative lineage preservation, Stage 3 -> Stage 4 boundary proof, and Stage 4 -> Stage 5 forward-boundary contract readiness proof.
 - notes: accepted.
+
+### FX-R014
+- status: accepted
+- files: `src/gdc_adk/workflows/agent_roles.py`, `src/gdc_adk/workflows/agent_contracts.py`, `src/gdc_adk/workflows/handoff_manager.py`, `src/gdc_adk/workflows/delegation_engine.py`, `src/gdc_adk/validation/handoff_validator.py`, `src/gdc_adk/validation/agent_governance.py`, `tests/test_stage6.py`
+- contracts: `RoleDefinition`, `HandoffArtifact`, `AgentTraceRecord`, `CoordinationEnvelope`, `HandoffValidationResult`, `GovernanceCheckResult`, `HandoffLifecycleResult`, `DelegationResult`, `Stage7ForwardEnvelope`, plus Stage 4 `WorkflowRun` and Stage 5 `ContinuitySnapshot` / `ContextBlock` contract references
+- workflow_modes: `dynamic_flow`, `fuzzy_logical_flow`, and bounded delegated paths within `iterative` and `fix_flow`
+- acceptance_scenarios: Scenario A, Scenario B, Scenario C, Scenario D, Scenario E, Scenario F
+- evidence: `tests/test_stage6.py` proves valid typed handoff artifact creation; bounded delegation from allowed role to allowed target; malformed handoff rejection; unauthorized delegation rejection; over-broad task-scope rejection; invalid review-required handoff rejection before acceptance; Stage 5 -> Stage 6 boundary proof through typed `ContinuitySnapshot` and `ContextBlock` references; replay-safe export/reset/load lifecycle proof for handoff and coordination state; anti-swarm governance negatives through `validate_agent_sequence(...)`, `detect_swarm_violation(...)`, same-role rejection, unresolved-handoff-limit blocking, and out-of-workflow trace rejection; and Stage 6 -> Stage 7 forward-boundary contract proof via `Stage7ForwardEnvelope` serialization only.
+- notes: `agent_contracts.py`, `agent_roles.py`, `handoff_manager.py`, `delegation_engine.py`, `handoff_validator.py`, and `agent_governance.py` enforce typed, bounded, replay-safe coordination without hidden state.
+- disposition: accepted
