@@ -16,6 +16,13 @@ class TimeLookupResult(TypedDict):
     error_code: str | None
 
 
+class SupportedTimeCitiesResult(TypedDict):
+    status: str
+    count: int
+    cities: list[str]
+    report: str
+
+
 def get_current_time(city: str) -> TimeLookupResult:
     city_record = lookup_city(city)
     if city_record is None:
@@ -51,11 +58,11 @@ def get_local_system_time() -> TimeLookupResult:
     )
 
 
-def list_supported_time_cities() -> dict[str, object]:
+def list_supported_time_cities() -> SupportedTimeCitiesResult:
     cities = sorted(city["canonical_name"] for city in get_city_registry().values())
-    return {
-        "status": "success",
-        "count": len(cities),
-        "cities": cities,
-        "report": f"I currently support time lookup for {len(cities)} cities.",
-    }
+    return SupportedTimeCitiesResult(
+        status="success",
+        count=len(cities),
+        cities=cities,
+        report=f"I currently support time lookup for {len(cities)} cities.",
+    )

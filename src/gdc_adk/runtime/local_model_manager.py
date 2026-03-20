@@ -11,6 +11,15 @@ class LocalModelState:
     model_name: str | None
 
 
+@dataclass(frozen=True)
+class LocalModelRuntimePolicy:
+    max_concurrent_models: int
+    unload_after_request: bool
+    ollama_keep_alive: int
+    prefer_warm_model: bool
+    allow_backend_switch: bool
+
+
 _LOCAL_MODEL_STATE = LocalModelState(provider_name=None, model_name=None)
 
 
@@ -42,12 +51,12 @@ def load_local_model_state(state: LocalModelState) -> LocalModelState:
     return _LOCAL_MODEL_STATE
 
 
-def get_local_model_runtime_policy() -> dict[str, int | bool]:
+def get_local_model_runtime_policy() -> LocalModelRuntimePolicy:
     runtime_settings = get_runtime_settings()
-    return {
-        "max_concurrent_models": runtime_settings.max_concurrent_models,
-        "unload_after_request": runtime_settings.unload_after_request,
-        "ollama_keep_alive": runtime_settings.ollama_keep_alive,
-        "prefer_warm_model": runtime_settings.prefer_warm_model,
-        "allow_backend_switch": runtime_settings.allow_backend_switch,
-    }
+    return LocalModelRuntimePolicy(
+        max_concurrent_models=runtime_settings.max_concurrent_models,
+        unload_after_request=runtime_settings.unload_after_request,
+        ollama_keep_alive=runtime_settings.ollama_keep_alive,
+        prefer_warm_model=runtime_settings.prefer_warm_model,
+        allow_backend_switch=runtime_settings.allow_backend_switch,
+    )

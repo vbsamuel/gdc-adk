@@ -51,9 +51,6 @@ class Stage2Settings:
     weather: WeatherProviderSettings
 
 
-_SETTINGS_CACHE: Stage2Settings | None = None
-
-
 def require_env(name: str) -> str:
     value = os.getenv(name, "").strip()
     if not value:
@@ -88,8 +85,7 @@ def load_yaml_config() -> dict[str, Any]:
 
 
 def reset_settings_cache() -> None:
-    global _SETTINGS_CACHE
-    _SETTINGS_CACHE = None
+    return None
 
 
 def _load_provider_settings(config: dict[str, Any]) -> dict[str, ProviderSettings]:
@@ -153,16 +149,13 @@ def _load_weather_settings(config: dict[str, Any]) -> WeatherProviderSettings:
 
 
 def load_stage2_settings() -> Stage2Settings:
-    global _SETTINGS_CACHE
-    if _SETTINGS_CACHE is None:
-        config = load_yaml_config()
-        _SETTINGS_CACHE = Stage2Settings(
-            providers=_load_provider_settings(config),
-            routing=_load_routing_settings(config),
-            runtime=_load_runtime_settings(config),
-            weather=_load_weather_settings(config),
-        )
-    return _SETTINGS_CACHE
+    config = load_yaml_config()
+    return Stage2Settings(
+        providers=_load_provider_settings(config),
+        routing=_load_routing_settings(config),
+        runtime=_load_runtime_settings(config),
+        weather=_load_weather_settings(config),
+    )
 
 
 def get_provider_settings(provider_name: str) -> ProviderSettings:

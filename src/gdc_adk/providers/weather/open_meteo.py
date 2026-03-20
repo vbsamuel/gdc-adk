@@ -5,7 +5,6 @@ from collections.abc import Callable
 from urllib.parse import urlencode
 from urllib.request import urlopen
 
-from gdc_adk.capabilities.geo import lookup_city
 from gdc_adk.config.settings import get_weather_provider_settings
 
 from .base import WeatherProvider, WeatherProviderRequest, WeatherProviderResponse, validate_weather_provider_request
@@ -21,19 +20,9 @@ class OpenMeteoWeatherProvider(WeatherProvider):
 
     def get_weather(self, request: WeatherProviderRequest) -> WeatherProviderResponse:
         validate_weather_provider_request(request)
-        city_record = lookup_city(request.city)
-        if city_record is None:
-            return WeatherProviderResponse(
-                status="rejected",
-                city=None,
-                timezone=None,
-                report=f"Sorry, I could not resolve '{request.city}' to a supported city.",
-                error_code="unknown_city",
-            )
-
         params = {
-            "latitude": city_record["latitude"],
-            "longitude": city_record["longitude"],
+            "latitude": request.latitude,
+            "longitude": request.longitude,
             "current": ",".join(
                 [
                     "temperature_2m",
@@ -56,8 +45,8 @@ class OpenMeteoWeatherProvider(WeatherProvider):
         except Exception as exc:
             return WeatherProviderResponse(
                 status="failed",
-                city=city_record["canonical_name"],
-                timezone=city_record["timezone"],
+                city=request.city,
+                timezone=request.timezone,
                 report=f"Weather provider request failed: {exc}",
                 error_code="weather_provider_failed",
             )
@@ -66,21 +55,21 @@ class OpenMeteoWeatherProvider(WeatherProvider):
         if not current_weather:
             return WeatherProviderResponse(
                 status="failed",
-                city=city_record["canonical_name"],
-                timezone=city_record["timezone"],
+                city=request.city,
+                timezone=request.timezone,
                 report="Weather provider returned no current weather data.",
                 error_code="weather_provider_empty",
             )
 
         report = (
-            f"Current weather in {city_record['canonical_name']}: "
+            f"Current weather in {request.city}: "
             f"temperature {current_weather.get('temperature_2m')} C, "
             f"feels like {current_weather.get('apparent_temperature')} C."
         )
         return WeatherProviderResponse(
             status="success",
-            city=city_record["canonical_name"],
-            timezone=city_record["timezone"],
+            city=request.city,
+            timezone=request.timezone,
             report=report,
             raw_payload=payload,
         )

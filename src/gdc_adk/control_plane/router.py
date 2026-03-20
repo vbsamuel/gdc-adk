@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from gdc_adk.config.settings import get_failover_order
 from gdc_adk.control_plane.gate_evaluator import evaluate_provider_gate
 from gdc_adk.control_plane.model_registry import list_cloud_provider_names, list_local_provider_names, select_default_provider_name
 from gdc_adk.control_plane.policy import RoutingPolicyRequest, evaluate_routing_policy
@@ -31,12 +32,19 @@ class RouteDecision:
 def select_provider_failover_chain(allow_cloud_provider: bool) -> tuple[str, ...]:
     local_provider_names = list_local_provider_names()
     cloud_provider_names = list_cloud_provider_names()
-    provider_chain = list(local_provider_names)
+    provider_chain: list[str] = []
+
+    for provider_name in get_failover_order():
+        if provider_name in local_provider_names or provider_name in cloud_provider_names:
+            provider_chain.append(provider_name)
 
     default_provider_name = select_default_provider_name()
-    if default_provider_name in provider_chain:
-        provider_chain.remove(default_provider_name)
+    if default_provider_name not in provider_chain and default_provider_name in local_provider_names:
         provider_chain.insert(0, default_provider_name)
+
+    for provider_name in local_provider_names:
+        if provider_name not in provider_chain:
+            provider_chain.append(provider_name)
 
     if allow_cloud_provider:
         provider_chain.extend(provider_name for provider_name in cloud_provider_names if provider_name not in provider_chain)

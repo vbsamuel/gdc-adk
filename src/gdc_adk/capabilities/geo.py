@@ -23,6 +23,13 @@ class CityRecord(TypedDict):
     aliases: list[str]
 
 
+class ResolvedLocation(TypedDict):
+    city: str
+    timezone: str
+    latitude: float
+    longitude: float
+
+
 def normalize_city_name(city: str | None) -> str:
     return (city or "").strip().lower()
 
@@ -128,3 +135,15 @@ def lookup_city(name: str) -> CityRecord | None:
     if not candidates:
         return None
     return candidates[0]
+
+
+def resolve_city_location(name: str) -> ResolvedLocation | None:
+    city_record = lookup_city(name)
+    if city_record is None:
+        return None
+    return ResolvedLocation(
+        city=city_record["canonical_name"],
+        timezone=city_record["timezone"],
+        latitude=city_record["latitude"],
+        longitude=city_record["longitude"],
+    )

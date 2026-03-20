@@ -12,6 +12,9 @@ class WeatherProviderContractError(ValueError):
 @dataclass(frozen=True)
 class WeatherProviderRequest:
     city: str
+    latitude: float
+    longitude: float
+    timezone: str
 
 
 @dataclass(frozen=True)
@@ -27,6 +30,12 @@ class WeatherProviderResponse:
 def validate_weather_provider_request(request: WeatherProviderRequest) -> WeatherProviderRequest:
     if not request.city.strip():
         raise WeatherProviderContractError("city must be non-empty")
+    if not isinstance(request.latitude, float):
+        raise WeatherProviderContractError("latitude must be float")
+    if not isinstance(request.longitude, float):
+        raise WeatherProviderContractError("longitude must be float")
+    if not request.timezone.strip():
+        raise WeatherProviderContractError("timezone must be non-empty")
     return request
 
 
