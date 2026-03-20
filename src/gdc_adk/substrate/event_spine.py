@@ -27,6 +27,20 @@ def record_event(event: Event) -> Event:
     return event
 
 
+def reset_events() -> None:
+    EVENTS.clear()
+
+
+def export_event_records() -> List[Event]:
+    return [dict(event) for event in EVENTS]
+
+
+def load_event_records(events: List[Event]) -> None:
+    reset_events()
+    for event in events:
+        record_event(event)
+
+
 def get_event(event_id: str) -> Event:
     for event in EVENTS:
         if event["event_id"] == event_id:
